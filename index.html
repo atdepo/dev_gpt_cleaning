@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversation Evaluation Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div id="app" class="max-w-4xl mx-auto p-4">
+    <h1 class="text-3xl font-bold text-center my-8 text-indigo-600">Conversation Evaluation Platform</h1>
+
+    <!-- Upload Section -->
+    <div id="upload-section" class="bg-white shadow-lg rounded-lg p-8 mb-8 transition-all duration-300 ease-in-out hover:shadow-xl">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Upload Conversations</h2>
+
+        <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+            <p class="font-semibold">Please upload a JSON file containing the conversations to evaluate.</p>
+        </div>
+
+        <label for="file-upload" class="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-indigo-500 focus:outline-none">
+                <span class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span class="font-medium text-gray-600">Drop files to Attach, or <span class="text-indigo-600 underline">browse</span></span>
+                </span>
+            <input id="file-upload" name="file-upload" type="file" class="hidden" accept=".json" />
+        </label>
+
+        <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-6" role="alert"></div>
+    </div>
+
+    <!-- Evaluation Section -->
+    <div id="evaluation-section" class="hidden">
+        <div class="bg-white shadow-lg rounded-lg p-8 mb-8 transition-all duration-300 ease-in-out hover:shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Evaluate Prompt</h2>
+
+            <div id="prompt-content" class="mb-6 p-4 bg-gray-100 rounded-md whitespace-pre-wrap"></div>
+
+            <div class="flex justify-between mb-4">
+                <button id="in-topic" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300">Prompt In Topic</button>
+                <button id="out-of-topic" class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300">Prompt Out Of Topic</button>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-8">
+            <button id="prev-button" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-300">Previous</button>
+            <span id="progress" class="text-lg font-semibold text-gray-700"></span>
+            <button id="next-button" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-300">Next</button>
+        </div>
+
+        <div class="text-center">
+            <button id="show-results" class="px-8 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Show Results</button>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-section" class="hidden">
+        <div class="bg-white shadow-lg rounded-lg p-8 transition-all duration-300 ease-in-out hover:shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Evaluation Results</h2>
+            <pre id="results-content" class="bg-gray-100 p-4 rounded-md overflow-x-auto whitespace-pre-wrap"></pre>
+            <div class="flex justify-between mt-6">
+                <button id="copy-results" class="px-8 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300">Copy Results</button>
+                <button id="download-results" class="px-8 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-300">Download Results</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let conversations = [];
+    let currentIndex = 0;
+    let answers = [];
+
+    document.getElementById('file-upload').addEventListener('change', handleFileUpload);
+    document.getElementById('in-topic').addEventListener('click', () => handleAnswer('in-topic'));
+    document.getElementById('out-of-topic').addEventListener('click', () => handleAnswer('out-of-topic'));
+    document.getElementById('prev-button').addEventListener('click', showPreviousPrompt);
+    document.getElementById('next-button').addEventListener('click', showNextPrompt);
+    document.getElementById('show-results').addEventListener('click', showResults);
+    document.getElementById('copy-results').addEventListener('click', copyResults);
+    document.getElementById('download-results').addEventListener('click', downloadResults);
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    conversations = JSON.parse(e.target.result);
+                    if (!Array.isArray(conversations)) {
+                        throw new Error("Uploaded file does not contain an array of conversations.");
+                    }
+                    startEvaluation();
+                } catch (error) {
+                    showError("Invalid JSON file. Please upload a valid JSON file containing an array of conversations.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+    function startEvaluation() {
+        document.getElementById('upload-section').classList.add('hidden');
+        document.getElementById('evaluation-section').classList.remove('hidden');
+        answers = new Array(conversations.length).fill(null);
+        showPrompt(0);
+        updateProgress();
+    }
+
+    function showPrompt(index) {
+        const promptContent = document.getElementById('prompt-content');
+        const conversation = conversations[index];
+
+        let promptText = "";
+        if (typeof conversation === 'object' && conversation !== null) {
+            promptText = conversation.prompt || conversation.content || conversation.text || JSON.stringify(conversation);
+        } else {
+            promptText = "Error: Invalid conversation format";
+        }
+
+        promptContent.textContent = promptText;
+        promptContent.classList.add('fade-in');
+        setTimeout(() => promptContent.classList.remove('fade-in'), 500);
+        currentIndex = index;
+        updateButtonStates();
+    }
+
+    function handleAnswer(answer) {
+        answers[currentIndex] = answer;
+        showNextPrompt();
+    }
+
+    function showPreviousPrompt() {
+        if (currentIndex > 0) {
+            showPrompt(currentIndex - 1);
+        }
+    }
+
+    function showNextPrompt() {
+        if (currentIndex < conversations.length - 1) {
+            showPrompt(currentIndex + 1);
+        }
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const answeredCount = answers.filter(a => a !== null).length;
+        document.getElementById('progress').textContent = `${answeredCount} / ${conversations.length}`;
+        document.getElementById('show-results').disabled = answeredCount < conversations.length;
+    }
+
+    function updateButtonStates() {
+        document.getElementById('prev-button').disabled = currentIndex === 0;
+        document.getElementById('next-button').disabled = currentIndex === conversations.length - 1;
+    }
+
+    function showResults() {
+        document.getElementById('evaluation-section').classList.add('hidden');
+        document.getElementById('results-section').classList.remove('hidden');
+        const results = conversations.map((conv, index) => ({
+            id: conv.id || `prompt_${index + 1}`,
+            evaluation: answers[index]
+        }));
+        document.getElementById('results-content').textContent = JSON.stringify(results, null, 2);
+    }
+
+    function copyResults() {
+        const resultsText = document.getElementById('results-content').textContent;
+        navigator.clipboard.writeText(resultsText).then(() => {
+            alert('Results copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy results: ', err);
+        });
+    }
+
+    function downloadResults() {
+        const resultsText = document.getElementById('results-content').textContent;
+        const blob = new Blob([resultsText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'evaluation_results.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function showError(message) {
+        const errorElement = document.getElementById('error-message');
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+    }
+</script>
+</body>
+</html>

@@ -133,8 +133,7 @@ def chatgpt_response_validator():
                     the most dominant context. Break the prompt into parts if necessary to isolate 
                     software-related concepts.
                     - Introduce a fallback for uncertainty: If after thorough reassessment you are uncertain whether 
-                    the original response is accurate, respond with 'Uncertain'. Otherwise, respond with 'Valid' 
-                    if correct, or 'Invalid' if incorrect, always providing evidence for your decision.
+                    the original response is accurate, respond with 'Uncertain'.
                         
         Output Expected: After considering the reasoning steps listed, provide a single-word response based solely 
                     on the conclusion of your reasoning:
@@ -202,23 +201,16 @@ def token_counter():
             print(e)
 
 
-# token count for full conversation: 2798658
-# token count fot only the first prompt: 1046420
-# original classification: In topic 2135, out topic 1251
-# new classification: In topic 2262, out topic 1124
-# token count for only conversation in scope; 2192789
-
 def process_text(text):
-    # Remove all line breaks (both \n and \r)
+
     text = text.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
-    # Replace multiple whitespace characters with a single space
     text = re.sub(r'\s+', ' ', text)
     return text.strip()
 
 
 if __name__ == "__main__":
     load_dotenv()
-    # token_counter()
-    # topics_count()
-    # topic_modeling()
+    token_counter()
+    topics_count()
+    topic_modeling()
     chatgpt_response_validator()
