@@ -1,0 +1,70 @@
+import json
+import os
+
+
+# Load the JSON dataset
+def load_dataset(file_path):
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+
+# Create files based on the Type and Code fields
+def create_files_from_snippets(dataset):
+
+    global_count = 1
+    for source in dataset:
+        if source['TopicSoftwareDevelopmentAndEngineeringFlag']:
+            conv_id = source['Conversation_ID']
+            for block in source['ChatgptSharing']:
+                i = 1
+                blk_lst = block.get('Conversations', None)
+                if blk_lst is not None:
+                    for conv in blk_lst:
+                        for code in conv['ListOfCode']:
+                            type = code['Type']
+                            content = code['Content']
+
+                            if type is not None and content is not None:
+                                # Create a file with the appropriate extension
+                                extension = get_extension(type)
+                                if not extension:
+                                    print(f"Skipping snippet {conv_id}_{i} due to unsupported language '{type}'.")
+                                else:
+                                    file_name = f"files/snippet_{conv_id}_{i}.{extension}"
+                                    with open(file_name, 'w') as f:
+                                        f.write(content)
+                                    print(f"Created file: {file_name}")
+                            i += 1
+# Map language type to file extension
+def get_extension(language):
+    extensions = {
+        'python': 'py',
+        'javascript': 'js',
+        'java': 'java',
+        'c++': 'cpp',
+        'cpp': 'cpp',
+        'c': 'c',
+        'ruby': 'rb',
+        'go': 'go',
+        'tsx': 'tsx',
+        'html': 'html',
+        'css': 'css',
+        'php': 'php',
+        'swift': 'swift',
+        'r': 'r'
+    }
+    return extensions.get(language.lower())
+
+
+if __name__ == "__main__":
+    # Specify the path to your JSON dataset
+    dataset_path = "datasets/output_validated.json"
+
+    # Load the dataset and create files
+    try:
+        dataset = load_dataset(dataset_path)
+        create_files_from_snippets(dataset)
+    except FileNotFoundError:
+        print(f"Error: The file '{dataset_path}' was not found.")
+    except json.JSONDecodeError:
+        print("Error: Failed to decode JSON. Please check the format of the dataset.")
