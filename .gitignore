@@ -1,3 +1,8 @@
 .env
 .venv
 .idea
+/files
+/excluded_tmp
+/sent
+/to_send
+/datasets

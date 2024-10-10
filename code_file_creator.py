@@ -1,6 +1,39 @@
 import json
 import os
 
+extensions = {
+        'python': 'py',
+        'javascript': 'js',
+        'typescript': 'ts',
+        'java': 'java',
+        'c++': 'cpp',
+        'cpp': 'cpp',
+        'c': 'c',
+        'ruby': 'rb',
+        'go': 'go',
+        'tsx': 'tsx',
+        'html': 'html',
+        'css': 'css',
+        'php': 'php',
+        'swift': 'swift',
+        'r': 'r',
+        'sql': 'sql',
+        'rust': 'rs',
+        'svelte': 'svelte',
+        'lua': 'lua',
+        'js': 'js',
+        'ts': 'ts',
+        'groovy': 'groovy',
+        'jsx': 'jsx',
+        'csharp': 'cs',
+        'scss': 'scss',
+        'prisma': 'prisma',
+        'kotlin': 'kt',
+        'less': 'less',
+        'perl': 'pl',
+        'vue': 'vue'
+    }
+
 
 # Load the JSON dataset
 def load_dataset(file_path):
@@ -10,8 +43,6 @@ def load_dataset(file_path):
 
 # Create files based on the Type and Code fields
 def create_files_from_snippets(dataset):
-
-    global_count = 1
     for source in dataset:
         if source['TopicSoftwareDevelopmentAndEngineeringFlag']:
             conv_id = source['Conversation_ID']
@@ -26,34 +57,20 @@ def create_files_from_snippets(dataset):
 
                             if type is not None and content is not None:
                                 # Create a file with the appropriate extension
-                                extension = get_extension(type)
+                                extension = extensions.get(type.lower())
                                 if not extension:
                                     print(f"Skipping snippet {conv_id}_{i} due to unsupported language '{type}'.")
                                 else:
-                                    file_name = f"files/snippet_{conv_id}_{i}.{extension}"
+                                    # Create a folder for the specific extension if it doesn't exist
+                                    folder_name = f"files/{extension}"
+                                    os.makedirs(folder_name, exist_ok=True)
+
+                                    # Create the file within the appropriate folder
+                                    file_name = f"{folder_name}/snippet_{conv_id}_{i}.{extension}"
                                     with open(file_name, 'w') as f:
                                         f.write(content)
                                     print(f"Created file: {file_name}")
                             i += 1
-# Map language type to file extension
-def get_extension(language):
-    extensions = {
-        'python': 'py',
-        'javascript': 'js',
-        'java': 'java',
-        'c++': 'cpp',
-        'cpp': 'cpp',
-        'c': 'c',
-        'ruby': 'rb',
-        'go': 'go',
-        'tsx': 'tsx',
-        'html': 'html',
-        'css': 'css',
-        'php': 'php',
-        'swift': 'swift',
-        'r': 'r'
-    }
-    return extensions.get(language.lower())
 
 
 if __name__ == "__main__":

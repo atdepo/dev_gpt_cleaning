@@ -5,16 +5,16 @@ import re
 from dotenv import load_dotenv
 import tiktoken
 
-def call_chatgpt(system_prompt, prompt):
+def call_chatgpt(system_prompt, prompt, max_tokens):
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     completion = client.chat.completions.create(
-        model="gpt-4o-2024-08-06",
+        model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", f"content": f"{prompt}"}
         ],
-        max_tokens=1
+        max_tokens = max_tokens
     )
 
     return completion.choices[0].message.content
@@ -69,7 +69,7 @@ def topic_modeling():
                 # removing useless spaces and end lines to decrease the token count
                 system_prompt = process_text(system_prompt)
                 prompt = process_text(prompt)
-                result = call_chatgpt(system_prompt, prompt)
+                result = call_chatgpt(system_prompt, prompt, 1)
                 if result is not None:
                     entry['TopicSoftwareDevelopmentAndEngineeringFlag'] = True if result == "Yes" else False
                     entry['Conversation_ID'] = i
@@ -165,7 +165,7 @@ def chatgpt_response_validator():
             system_prompt = process_text(system_prompt)
             prompt = process_text(prompt)
             to_send = f"Previous Response: {source['TopicSoftwareDevelopmentAndEngineeringFlag']}. User Prompt: {prompt}"
-            result = call_chatgpt(system_prompt, to_send)
+            result = call_chatgpt(system_prompt, to_send, 3)
             json.dump(result, output_file)
             output_file.write('\n')
 
