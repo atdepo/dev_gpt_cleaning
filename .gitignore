@@ -3,6 +3,6 @@
 .idea
 /files
 /excluded_tmp
-/sent
+/human_evaluation
 /to_send
 /datasets

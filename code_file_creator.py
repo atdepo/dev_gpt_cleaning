@@ -75,7 +75,7 @@ def create_files_from_snippets(dataset):
 
 if __name__ == "__main__":
     # Specify the path to your JSON dataset
-    dataset_path = "datasets/output_validated.json"
+    dataset_path = "datasets/output_filtered.json"
 
     # Load the dataset and create files
     try:

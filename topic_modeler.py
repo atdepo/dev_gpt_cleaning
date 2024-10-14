@@ -12,9 +12,9 @@ def call_chatgpt(system_prompt, prompt, max_tokens):
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", f"content": f"{prompt}"}
+            {"role": "user", f"content": f"User Prompt to analyze: [PROMPT_START]{prompt}[PROMPT_END]"}
         ],
-        max_tokens = max_tokens
+        max_tokens=max_tokens
     )
 
     return completion.choices[0].message.content
@@ -40,7 +40,6 @@ def topic_modeling():
     7. Consider whether the prompt seeks definitions, explanations, or overviews of software-related concepts or processes.
     
     Output Expected:
-    pùoèipoirea xcvbnjm 
     After considering the reasoning steps listed, provide a single-word response based solely on the conclusion of your reasoning:
 
     Respond with 'Yes' if the prompt is related to software development and its engineering.
