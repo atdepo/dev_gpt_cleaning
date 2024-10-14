@@ -3,7 +3,6 @@ import openai
 import json
 import re
 from dotenv import load_dotenv
-import tiktoken
 
 def call_chatgpt(system_prompt, prompt, max_tokens):
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
