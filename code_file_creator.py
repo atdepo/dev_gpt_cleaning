@@ -46,8 +46,8 @@ def create_files_from_snippets(dataset):
     for source in dataset:
         if source['TopicSoftwareDevelopmentAndEngineeringFlag']:
             conv_id = source['Conversation_ID']
+            i = 1
             for block in source['ChatgptSharing']:
-                i = 1
                 blk_lst = block.get('Conversations', None)
                 if blk_lst is not None:
                     for conv in blk_lst:
@@ -75,7 +75,7 @@ def create_files_from_snippets(dataset):
 
 if __name__ == "__main__":
     # Specify the path to your JSON dataset
-    dataset_path = "datasets/output_filtered.json"
+    dataset_path = "dataset_prompt_step_3_v5.json"
 
     # Load the dataset and create files
     try:
