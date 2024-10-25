@@ -6,3 +6,6 @@
 /human_evaluation
 /to_send
 /datasets
+/cot-iterations
+/personas-iterations
+/zero-few-iterations
