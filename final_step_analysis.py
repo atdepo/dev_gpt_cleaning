@@ -46,6 +46,8 @@ def add_quality_metrics_json():
                                     if len(quality_meas) > 0:
                                         code["QualityMeasurement"] = quality_meas
                                     code["Snippet_ID"] = f"{conv_id}_{i}"
+                                    if f"{conv_id}_{i}" == "1712_3":
+                                        print("t")
                                     i += 1
 
     with open('outcome_step_1.json', 'w') as f:
@@ -58,7 +60,7 @@ def get_snippet(data, i, j):
     for elem in data:
         coords = elem['component'].split("/")[1].split(".")[0].split("_")[1:3]
 
-        if int(coords[0]) == i and int(coords[1]) == j:
+        if int(coords[0]) == i and int(coords[1]) == j and elem["message"] != "A parsing error occurred in this file.":
             snip.append(elem)
     return snip
 
@@ -188,10 +190,8 @@ def add_errors_json():
                                name = code["Snippet_ID"]
                                is_error = get_error(error_log_by_language, name)
                                if is_error:
-                                   if code.get("QualityMeasurement") is None:
-                                       code["QualityMeasurement"] = {"type":"Compilation error during analysis", "dimension": None, "severity": None}
-                                   else:
-                                       print(name)
+                                   code["QualityMeasurement"] = {"type":"Compilation error during analysis", "dimension": None, "severity": None}
+
 
         with open('outcome_step_3.json', 'w') as f:
             json.dump(data, f, indent=4)
@@ -206,7 +206,7 @@ def get_error(data, name):
 
 if __name__ == '__main__':
     load_dotenv()
-    retrieve()
+    #retrieve()
     add_quality_metrics_json()
     prompt_patterns_join()
     build_json_file_errors()
