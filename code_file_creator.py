@@ -73,6 +73,23 @@ def create_files_from_snippets(dataset):
                             i += 1
 
 
+def count(dataset):
+    i = 0
+    types = set()
+    for source in dataset:
+        if source['TopicSoftwareDevelopmentAndEngineeringFlag']:
+            for block in source['ChatgptSharing']:
+                blk_lst = block.get('Conversations', None)
+                if blk_lst is not None:
+                    for conv in blk_lst:
+                        for code in conv['ListOfCode']:
+                            type = code['Type']
+                            if type is not None:
+                                types.add(type.lower())
+                            i += 1
+
+    print(len(types))
+    return i
 if __name__ == "__main__":
     # Specify the path to your JSON dataset
     dataset_path = "dataset_prompt_step_3_v5.json"
@@ -80,7 +97,7 @@ if __name__ == "__main__":
     # Load the dataset and create files
     try:
         dataset = load_dataset(dataset_path)
-        create_files_from_snippets(dataset)
+        print(count(dataset))
     except FileNotFoundError:
         print(f"Error: The file '{dataset_path}' was not found.")
     except json.JSONDecodeError:
